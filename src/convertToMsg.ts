@@ -432,8 +432,8 @@ function burnPropertyStreamHeader32(
     view.setUint32(
       top + 0x4,
       (one.mandatory ? 1 : 0) |
-        (one.readable ? 2 : 0) |
-        (one.writeable ? 4 : 0),
+      (one.readable ? 2 : 0) |
+      (one.writeable ? 4 : 0),
       true,
     );
     if (8 < one.value.length) {
@@ -463,8 +463,8 @@ function burnPropertyStreamHeader24(
     view.setUint32(
       top + 0x4,
       (one.mandatory ? 1 : 0) |
-        (one.readable ? 2 : 0) |
-        (one.writeable ? 4 : 0),
+      (one.readable ? 2 : 0) |
+      (one.writeable ? 4 : 0),
       true,
     );
     if (8 < one.value.length) {
@@ -486,8 +486,8 @@ function burnPropertyStreamHeader8(props: Prop1[]): Uint8Array {
     view.setUint32(
       top + 0x4,
       (one.mandatory ? 1 : 0) |
-        (one.readable ? 2 : 0) |
-        (one.writeable ? 4 : 0),
+      (one.readable ? 2 : 0) |
+      (one.writeable ? 4 : 0),
       true,
     );
     if (8 < one.value.length) {
