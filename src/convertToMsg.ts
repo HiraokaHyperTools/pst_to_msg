@@ -14,14 +14,17 @@ type Prop1 = {
   value: Uint8Array;
 };
 
-export async function convertToMsg(message: PSTMessage, file: PSTFile): Promise<Uint8Array> {
+export async function convertToMsg(
+  message: PSTMessage,
+  file: PSTFile,
+): Promise<Uint8Array> {
   const entries: Entry[] = [
     {
       name: "Root Entry",
       type: TypeEnum.ROOT,
       children: [],
       length: 0,
-    }
+    },
   ];
 
   await convertMessage(
@@ -29,7 +32,7 @@ export async function convertToMsg(message: PSTMessage, file: PSTFile): Promise<
     0,
     (await message.requestAccessToUserSubNode())!,
     true,
-    file.getStoreSupportMask()
+    file.getStoreSupportMask(),
   );
 
   {
@@ -42,8 +45,8 @@ export async function convertToMsg(message: PSTMessage, file: PSTFile): Promise<
       dirIndex,
       pc.properties,
       subNode,
-      pc.resolveHeap
-    )
+      pc.resolveHeap,
+    );
   }
 
   return burn(entries);
@@ -54,7 +57,7 @@ async function convertMessage(
   parentIndex: number,
   subNode: PUSubNode,
   isRoot: boolean,
-  storeSupportMask: number | undefined
+  storeSupportMask: number | undefined,
 ): Promise<void> {
   // `__properties_version1.0`
   // `__substg1.0_0E1D001F`
@@ -82,8 +85,19 @@ async function convertMessage(
     recipientsCount = tc.numRows;
 
     for (let y = 0; y < recipientsCount; y++) {
-      const dirIndex = addDir(entries, parentIndex, `__recip_version1.0_#${toHex4(y, true)}`);
-      await convertGeneric(entries, dirIndex, await tc.getRow(y), recipientsSubNode, tc.resolveHeap, y);
+      const dirIndex = addDir(
+        entries,
+        parentIndex,
+        `__recip_version1.0_#${toHex4(y, true)}`,
+      );
+      await convertGeneric(
+        entries,
+        dirIndex,
+        await tc.getRow(y),
+        recipientsSubNode,
+        tc.resolveHeap,
+        y,
+      );
     }
   }
 
@@ -95,20 +109,34 @@ async function convertMessage(
     attachmentsCount = tc.numRows;
 
     for (let y = 0; y < attachmentsCount; y++) {
-      const dirIndex = addDir(entries, parentIndex, `__attach_version1.0_#${toHex4(y, true)}`);
+      const dirIndex = addDir(
+        entries,
+        parentIndex,
+        `__attach_version1.0_#${toHex4(y, true)}`,
+      );
       const limitedProperties = await tc.getRow(y);
-      const ltpRowId = limitedProperties.find(it => it.key == 0x67f2 && it.type == 0x0003);
+      const ltpRowId = limitedProperties.find(
+        (it) => it.key == 0x67f2 && it.type == 0x0003,
+      );
       if (ltpRowId) {
         const rowId = new DataView(ltpRowId.value).getUint32(0, true);
-        const attachmentSubNode = (await subNode.getSubNodeOf(rowId));
+        const attachmentSubNode = await subNode.getSubNodeOf(rowId);
         if (attachmentSubNode) {
           const pc = await attachmentSubNode.extractAsPropertyContext();
-          await convertAtt(entries, dirIndex, pc.properties, attachmentSubNode, pc.resolveHeap, y);
+          await convertAtt(
+            entries,
+            dirIndex,
+            pc.properties,
+            attachmentSubNode,
+            pc.resolveHeap,
+            y,
+          );
         } else {
-          throw new Error(`Attachment sub-node with row ID ${rowId} not found.`);
+          throw new Error(
+            `Attachment sub-node with row ID ${rowId} not found.`,
+          );
         }
-      }
-      else {
+      } else {
         throw new Error(`LTP row ID ${ltpRowId} not found.`);
       }
     }
@@ -119,7 +147,14 @@ async function convertMessage(
 
     const pc = await subNode.extractAsPropertyContext();
     for (let y = 0; y < pc.properties.length; y++) {
-      const pair = await convertProperty(entries, parentIndex, pc.properties[y], subNode, pc.resolveHeap, false);
+      const pair = await convertProperty(
+        entries,
+        parentIndex,
+        pc.properties[y],
+        subNode,
+        pc.resolveHeap,
+        false,
+      );
       props1.push(pair.prop1);
     }
 
@@ -174,7 +209,7 @@ async function convertMessage(
         // PidTagStoreSupportMask
         props1.push({
           tagLo: 0x0003,
-          tagHi: 0x340D,
+          tagHi: 0x340d,
           mandatory: false,
           readable: true,
           writeable: false,
@@ -213,8 +248,14 @@ async function convertMessage(
     }
 
     addFile(
-      entries, parentIndex, "__properties_version1.0",
-      (isRoot ? burnPropertyStreamHeader32 : burnPropertyStreamHeader24)(recipientsCount, attachmentsCount, props1)
+      entries,
+      parentIndex,
+      "__properties_version1.0",
+      (isRoot ? burnPropertyStreamHeader32 : burnPropertyStreamHeader24)(
+        recipientsCount,
+        attachmentsCount,
+        props1,
+      ),
     );
   }
 }
@@ -225,12 +266,19 @@ async function convertGeneric(
   properties: RawProperty[],
   subNode: PUSubNode,
   resolveHeap: (heap: number) => Promise<ArrayBuffer | undefined>,
-  rowIndex: number
+  rowIndex: number,
 ): Promise<void> {
   const props1: Prop1[] = [];
 
   for (let y = 0; y < properties.length; y++) {
-    const pair = await convertProperty(entries, parentIndex, properties[y], subNode, resolveHeap, false);
+    const pair = await convertProperty(
+      entries,
+      parentIndex,
+      properties[y],
+      subNode,
+      resolveHeap,
+      false,
+    );
     props1.push(pair.prop1);
   }
 
@@ -253,8 +301,10 @@ async function convertGeneric(
   }
 
   addFile(
-    entries, parentIndex, "__properties_version1.0",
-    burnPropertyStreamHeader8(props1)
+    entries,
+    parentIndex,
+    "__properties_version1.0",
+    burnPropertyStreamHeader8(props1),
   );
 }
 
@@ -264,12 +314,19 @@ async function convertAtt(
   properties: RawProperty[],
   subNode: PUSubNode,
   resolveHeap: (heap: number) => Promise<ArrayBuffer | undefined>,
-  attachmentIndex: number
+  attachmentIndex: number,
 ): Promise<void> {
   const props1: Prop1[] = [];
 
   for (let y = 0; y < properties.length; y++) {
-    const pair = await convertProperty(entries, parentIndex, properties[y], subNode, resolveHeap, false);
+    const pair = await convertProperty(
+      entries,
+      parentIndex,
+      properties[y],
+      subNode,
+      resolveHeap,
+      false,
+    );
     props1.push(pair.prop1);
   }
 
@@ -284,7 +341,7 @@ async function convertAtt(
 
     props1.push({
       tagLo: 0x0003,
-      tagHi: 0x0E21,
+      tagHi: 0x0e21,
       mandatory: false,
       readable: true,
       writeable: false,
@@ -293,8 +350,10 @@ async function convertAtt(
   }
 
   addFile(
-    entries, parentIndex, "__properties_version1.0",
-    burnPropertyStreamHeader8(props1)
+    entries,
+    parentIndex,
+    "__properties_version1.0",
+    burnPropertyStreamHeader8(props1),
   );
 }
 
@@ -303,17 +362,29 @@ async function convertNameId(
   parentIndex: number,
   properties: RawProperty[],
   subNode: PUSubNode,
-  resolveHeap: (heap: number) => Promise<ArrayBuffer | undefined>
+  resolveHeap: (heap: number) => Promise<ArrayBuffer | undefined>,
 ): Promise<void> {
   const props1: Prop1[] = [];
 
   for (let y = 0; y < properties.length; y++) {
-    const pair = await convertProperty(entries, parentIndex, properties[y], subNode, resolveHeap, true);
+    const pair = await convertProperty(
+      entries,
+      parentIndex,
+      properties[y],
+      subNode,
+      resolveHeap,
+      true,
+    );
     props1.push(pair.prop1);
   }
 }
 
-function addFile(entries: Entry[], parentIndex: number, name: string, data: Uint8Array): void {
+function addFile(
+  entries: Entry[],
+  parentIndex: number,
+  name: string,
+  data: Uint8Array,
+): void {
   const entry: Entry = {
     name,
     type: TypeEnum.DOCUMENT,
@@ -322,7 +393,9 @@ function addFile(entries: Entry[], parentIndex: number, name: string, data: Uint
   };
   const fileIndex = entries.length;
   entries.push(entry);
-  entries[parentIndex].children = (entries[parentIndex].children || []).concat(fileIndex);
+  entries[parentIndex].children = (entries[parentIndex].children || []).concat(
+    fileIndex,
+  );
 }
 
 function addDir(entries: Entry[], parentIndex: number, name: string): number {
@@ -334,23 +407,35 @@ function addDir(entries: Entry[], parentIndex: number, name: string): number {
   };
   const newIndex = entries.length;
   entries.push(entry);
-  entries[parentIndex].children = (entries[parentIndex].children || []).concat(newIndex);
+  entries[parentIndex].children = (entries[parentIndex].children || []).concat(
+    newIndex,
+  );
   return newIndex;
 }
 
-function burnPropertyStreamHeader32(recipientsCount: number, attachmentsCount: number, props: Prop1[]): Uint8Array {
+function burnPropertyStreamHeader32(
+  recipientsCount: number,
+  attachmentsCount: number,
+  props: Prop1[],
+): Uint8Array {
   const array = new Uint8Array(32 + 16 * props.length);
   const view = new DataView(array.buffer);
   view.setUint32(0x08, recipientsCount, true); // int NextRecipientID
-  view.setUint32(0x0C, attachmentsCount, true);// int NextAttachmentID
-  view.setUint32(0x10, recipientsCount, true);// int RecipientCount
-  view.setUint32(0x14, attachmentsCount, true);// int AttachmentCount
+  view.setUint32(0x0c, attachmentsCount, true); // int NextAttachmentID
+  view.setUint32(0x10, recipientsCount, true); // int RecipientCount
+  view.setUint32(0x14, attachmentsCount, true); // int AttachmentCount
   for (let y = 0; y < props.length; y++) {
     const top = 32 + 16 * y;
     const one = props[y];
     view.setUint16(top + 0x0, one.tagLo, true);
     view.setUint16(top + 0x2, one.tagHi, true);
-    view.setUint32(top + 0x4, (one.mandatory ? 1 : 0) | (one.readable ? 2 : 0) | (one.writeable ? 4 : 0), true);
+    view.setUint32(
+      top + 0x4,
+      (one.mandatory ? 1 : 0) |
+        (one.readable ? 2 : 0) |
+        (one.writeable ? 4 : 0),
+      true,
+    );
     if (8 < one.value.length) {
       throw new Error("Property value has to be at most 8 bytes long!");
     }
@@ -359,19 +444,29 @@ function burnPropertyStreamHeader32(recipientsCount: number, attachmentsCount: n
   return array;
 }
 
-function burnPropertyStreamHeader24(recipientsCount: number, attachmentsCount: number, props: Prop1[]): Uint8Array {
+function burnPropertyStreamHeader24(
+  recipientsCount: number,
+  attachmentsCount: number,
+  props: Prop1[],
+): Uint8Array {
   const array = new Uint8Array(24 + 16 * props.length);
   const view = new DataView(array.buffer);
   view.setUint32(0x08, recipientsCount, true); // int NextRecipientID
-  view.setUint32(0x0C, attachmentsCount, true);// int NextAttachmentID
-  view.setUint32(0x10, recipientsCount, true);// int RecipientCount
-  view.setUint32(0x14, attachmentsCount, true);// int AttachmentCount
+  view.setUint32(0x0c, attachmentsCount, true); // int NextAttachmentID
+  view.setUint32(0x10, recipientsCount, true); // int RecipientCount
+  view.setUint32(0x14, attachmentsCount, true); // int AttachmentCount
   for (let y = 0; y < props.length; y++) {
     const top = 24 + 16 * y;
     const one = props[y];
     view.setUint16(top + 0x0, one.tagLo, true);
     view.setUint16(top + 0x2, one.tagHi, true);
-    view.setUint32(top + 0x4, (one.mandatory ? 1 : 0) | (one.readable ? 2 : 0) | (one.writeable ? 4 : 0), true);
+    view.setUint32(
+      top + 0x4,
+      (one.mandatory ? 1 : 0) |
+        (one.readable ? 2 : 0) |
+        (one.writeable ? 4 : 0),
+      true,
+    );
     if (8 < one.value.length) {
       throw new Error("Property value has to be at most 8 bytes long!");
     }
@@ -388,7 +483,13 @@ function burnPropertyStreamHeader8(props: Prop1[]): Uint8Array {
     const one = props[y];
     view.setUint16(top + 0x0, one.tagLo, true);
     view.setUint16(top + 0x2, one.tagHi, true);
-    view.setUint32(top + 0x4, (one.mandatory ? 1 : 0) | (one.readable ? 2 : 0) | (one.writeable ? 4 : 0), true);
+    view.setUint32(
+      top + 0x4,
+      (one.mandatory ? 1 : 0) |
+        (one.readable ? 2 : 0) |
+        (one.writeable ? 4 : 0),
+      true,
+    );
     if (8 < one.value.length) {
       throw new Error("Property value has to be at most 8 bytes long!");
     }
@@ -403,17 +504,17 @@ async function convertProperty(
   prop: RawProperty,
   subNode: PUSubNode,
   resolveHeap: (heap: number) => Promise<ArrayBuffer | undefined>,
-  writeAllPropsToFile: boolean
+  writeAllPropsToFile: boolean,
 ): Promise<{ prop1: Prop1 }> {
-
   let value = prop.value;
 
   // console.log("convertProperty", toHex2(prop.key), toHex2(prop.type), prop.value?.byteLength, prop.value);
-  if (false
-    || prop.type === 0x000B
-    || prop.type === 0x0002
-    || prop.type === 0x0004
-    || prop.type === 0x0003
+  if (
+    false ||
+    prop.type === 0x000b ||
+    prop.type === 0x0002 ||
+    prop.type === 0x0004 ||
+    prop.type === 0x0003
   ) {
     if (writeAllPropsToFile) {
       if (value) {
@@ -421,17 +522,16 @@ async function convertProperty(
           entries,
           parentIndex,
           `__substg1.0_${toHex2(prop.key, true)}${toHex2(prop.type, true)}`,
-          new Uint8Array(value)
+          new Uint8Array(value),
         );
       }
     }
-  }
-  else if (prop.type === 0x000D) {
+  } else if (prop.type === 0x000d) {
     // `__substg1.0_3701000D`
     const dirIndex = addDir(
       entries,
       parentIndex,
-      `__substg1.0_${toHex2(prop.key, true)}000D`
+      `__substg1.0_${toHex2(prop.key, true)}000D`,
     );
     const hnid = new DataView(value).getUint32(0, true);
     const bytes = await resolveHeap(hnid);
@@ -449,8 +549,7 @@ async function convertProperty(
         view.setUint32(4, 1, true); // ATTACH_EMBEDDED_MSG (0x00000005) → 0x01
       }
     }
-  }
-  else {
+  } else {
     if (value && 4 <= value.byteLength) {
       const hnid = new DataView(value).getUint32(0, true);
       const bytes = await resolveHeap(hnid);
@@ -460,46 +559,42 @@ async function convertProperty(
             entries,
             parentIndex,
             `__substg1.0_${toHex2(prop.key, true)}${toHex2(prop.type, true)}`,
-            new Uint8Array(actualData)
+            new Uint8Array(actualData),
           );
-        }
-        if (false) { }
-        else if (prop.type === 0x1E) {
+        };
+        if (false) {
+        } else if (prop.type === 0x1e) {
           const altBytes = fixAnsiString(bytes);
           value = new ArrayBuffer(8);
           const view = new DataView(value);
           view.setUint32(0, altBytes.byteLength + 1, true);
           apply(altBytes);
-        }
-        else if (prop.type === 0x1F) {
+        } else if (prop.type === 0x1f) {
           const altBytes = fixUnicodeString(bytes);
           value = new ArrayBuffer(8);
           const view = new DataView(value);
           view.setUint32(0, altBytes.byteLength + 2, true);
           apply(altBytes);
-        }
-        else {
+        } else {
           value = new ArrayBuffer(8);
           const view = new DataView(value);
           view.setUint32(0, bytes.byteLength, true);
           apply(bytes);
         }
-      }
-      else {
+      } else {
         addFile(
           entries,
           parentIndex,
           `__substg1.0_${toHex2(prop.key, true)}${toHex2(prop.type, true)}`,
-          new Uint8Array(0)
+          new Uint8Array(0),
         );
       }
-    }
-    else {
+    } else {
       addFile(
         entries,
         parentIndex,
         `__substg1.0_${toHex2(prop.key, true)}${toHex2(prop.type, true)}`,
-        new Uint8Array(0)
+        new Uint8Array(0),
       );
     }
   }
@@ -512,16 +607,17 @@ async function convertProperty(
       readable: true,
       writeable: true,
       value: value ? new Uint8Array(value) : new Uint8Array(0),
-    }
+    },
   };
 }
 
 function fixUnicodeString(bytes: ArrayBuffer): ArrayBuffer {
   if (4 <= bytes.byteLength) {
     const view = new Uint8Array(bytes);
-    return (view[0] === 1 && view[1] === 0 && view[2] === 1 && view[3] === 0) ? bytes.slice(4) : bytes;
-  }
-  else {
+    return view[0] === 1 && view[1] === 0 && view[2] === 1 && view[3] === 0
+      ? bytes.slice(4)
+      : bytes;
+  } else {
     return bytes;
   }
 }
@@ -529,9 +625,8 @@ function fixUnicodeString(bytes: ArrayBuffer): ArrayBuffer {
 function fixAnsiString(bytes: ArrayBuffer): ArrayBuffer {
   if (2 <= bytes.byteLength) {
     const view = new Uint8Array(bytes);
-    return (view[0] === 1 && view[1] === 1) ? bytes.slice(2) : bytes;
-  }
-  else {
+    return view[0] === 1 && view[1] === 1 ? bytes.slice(2) : bytes;
+  } else {
     return bytes;
   }
 }
