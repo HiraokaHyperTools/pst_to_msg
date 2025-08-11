@@ -4,6 +4,8 @@
 
 Convert a message in Outlook PST file into MSG format
 
+Links: [typedoc documentation](https://hiraokahypertools.github.io/pst_to_msg/typedoc/)
+
 ## Export msg files in a batch work
 
 Traverse the entire pst file, and extract the found messages into file system folders.
