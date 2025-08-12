@@ -4,12 +4,6 @@
   "description": "Convert a message in Outlook PST file into MSG format",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist",
     "README.md",
