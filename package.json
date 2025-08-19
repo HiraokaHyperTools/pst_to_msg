@@ -1,6 +1,6 @@
 {
   "name": "@hiraokahypertools/pst_to_msg",
-  "version": "0.1.0-alpha3",
+  "version": "0.1.0-alpha4",
   "description": "Convert a message in Outlook PST file into MSG format",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -46,7 +46,7 @@
   "private": false,
   "devDependencies": {
     "@types/jest": "^29.0.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.2.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
@@ -58,7 +58,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@hiraokahypertools/pst-extractor": "^0.1.0-alpha.20",
+    "@hiraokahypertools/pst-extractor": "^0.1.0-alpha.22",
     "@kenjiuno/msgreader": "^1.25.0-beta1"
   }
 }
