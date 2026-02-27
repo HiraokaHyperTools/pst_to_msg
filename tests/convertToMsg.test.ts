@@ -10,7 +10,7 @@ describe('convertToMsg', () => {
   describe('batch conversion', () => {
 
     const extractPstFileTo = async (pstFilePath: string, outDirRoot: string): Promise<void> => {
-      const pstFile = await openPstFile(pstFilePath, { ansiEncoding: "cp932", });
+      const pstFile = await openPstFile(pstFilePath, { ansiEncoding: "ms932", });
       try {
         async function walk(folder: PSTFolder, outDir: string): Promise<void> {
           {

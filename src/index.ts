@@ -1,1 +1,1 @@
-export { convertToMsg } from "./convertToMsg";
+export { convertToMsg } from "./convertToMsg.js";

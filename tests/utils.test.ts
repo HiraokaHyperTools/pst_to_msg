@@ -1,4 +1,4 @@
-import { toHex4 } from "../src/utils";
+import { toHex4 } from "../src/utils.js";
 
 describe('toHex4', () => {
   it("0", () => { expect(toHex4(0)).toBe("00000000"); });

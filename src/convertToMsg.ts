@@ -1,9 +1,9 @@
+import { burn, TypeEnum } from "@kenjiuno/msgreader-web-ng";
 import { PSTFile, PSTMessage } from "@hiraokahypertools/pst-extractor";
-import { burn, Entry } from "@kenjiuno/msgreader/lib/Burner";
-import { TypeEnum } from "@kenjiuno/msgreader/lib/Reader";
-import { toHex2, toHex4 } from "./utils";
-import { PUSubNode } from "@hiraokahypertools/pst-extractor/dist/PUSubNode";
-import { RawProperty } from "@hiraokahypertools/pst-extractor/dist/RawProperty";
+import { toHex2, toHex4 } from "./utils.js";
+import type { PUSubNode } from "@hiraokahypertools/pst-extractor";
+import type { RawProperty } from "@hiraokahypertools/pst-extractor";
+import type { Entry } from "@kenjiuno/msgreader-web-ng";
 
 type Prop1 = {
   tagLo: number;
