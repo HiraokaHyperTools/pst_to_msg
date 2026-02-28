@@ -1,5 +1,5 @@
 import { convertToMsg } from '../src/index';
-import { openPstFile, PSTFolder } from '@hiraokahypertools/pst-extractor';
+import { openPstFile, type IPSTFolder } from '@hiraokahypertools/pst-extractor';
 import { writeFile, mkdir } from 'node:fs/promises';
 
 function normFileName(fileName: string): string {
@@ -12,7 +12,7 @@ describe('convertToMsg', () => {
     const extractPstFileTo = async (pstFilePath: string, outDirRoot: string): Promise<void> => {
       const pstFile = await openPstFile(pstFilePath, { ansiEncoding: "ms932", });
       try {
-        async function walk(folder: PSTFolder, outDir: string): Promise<void> {
+        async function walk(folder: IPSTFolder, outDir: string): Promise<void> {
           {
             const subFolderCount = await folder.getSubFolderCount();
             for (let i = 0; i < subFolderCount; i++) {

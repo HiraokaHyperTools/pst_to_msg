@@ -1,7 +1,7 @@
 import { burn, TypeEnum } from "@kenjiuno/msgreader-web-ng";
 import { toHex2, toHex4 } from "./utils.js";
 import type { Entry } from "@kenjiuno/msgreader-web-ng";
-import type { PUNode, PUSubNode } from "@hiraokahypertools/pst-extractor";
+import type { IPSTFile, IPSTMessage, PUSubNode } from "@hiraokahypertools/pst-extractor";
 import type { RawProperty } from "@hiraokahypertools/pst-extractor";
 
 type Prop1 = {
@@ -13,18 +13,9 @@ type Prop1 = {
   value: Uint8Array;
 };
 
-interface _IPSTMessage {
-  requestAccessToUserSubNode(): Promise<PUSubNode | undefined>;
-}
-
-interface _IPSTFile {
-  getStoreSupportMask(): number | undefined;
-  requestAccessToUserNode(nodeId: number): Promise<PUNode | undefined>;
-}
-
 export async function convertToMsg(
-  message: _IPSTMessage,
-  file: _IPSTFile,
+  message: IPSTMessage,
+  file: IPSTFile,
 ): Promise<Uint8Array> {
   const entries: Entry[] = [
     {
