@@ -1,8 +1,12 @@
 export default {
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   transform: {
-    "^.+\\.(t|j)sx?$": "babel-jest",
+    '^.+\\.(ts|tsx|js)$': ['ts-jest', {
+      tsconfig: 'tsconfig.test.json'
+    }]
   },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@kenjiuno/msgreader-web-ng$': '<rootDir>/node_modules/@kenjiuno/msgreader-web-ng/lib/index.js',
@@ -10,5 +14,5 @@ export default {
   },
   transformIgnorePatterns: [
     "/node_modules/(?!(@kenjiuno/msgreader-web-ng|@hiraokahypertools/pst-extractor)/)"
-  ],
+  ]
 };

@@ -2,9 +2,6 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "nodenext",
-    "lib": [
-      "ES2020"
-    ],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -18,8 +15,8 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true
   },
   "include": [
     "src/**/*"
