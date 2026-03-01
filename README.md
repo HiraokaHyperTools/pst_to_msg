@@ -17,12 +17,12 @@ npm install @hiraokahypertools/pst_to_msg
 ### Basic Usage
 
 ```js
-const { convertToMsg } = require('@hiraokahypertools/pst_to_msg');
-const { openPstFile } = require('@hiraokahypertools/pst-extractor');
-const { writeFileSync } = require('fs');
+import { convertToMsg } from '@hiraokahypertools/pst_to_msg';
+import { openPstFile } from '@hiraokahypertools/pst-extractor';
+import { writeFileSync } from 'fs';
 
 async function convertSingleMessage() {
-  const pstFile = await openPstFile('example.pst', { ansiEncoding: "cp932" });
+  const pstFile = await openPstFile('example.pst', { ansiEncoding: "ms932" });
 
   try {
     const unnamedFolder = await pstFile.getRootFolder();
@@ -38,7 +38,7 @@ async function convertSingleMessage() {
   }
 }
 
-convertSingleMessage();
+await convertSingleMessage();
 
 ```
 
